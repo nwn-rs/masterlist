@@ -68,28 +68,53 @@ pub struct Me {
   pub servers: Vec<Server>,
 }
 
+const BASE_URL: &str = "https://api.serverlist.tf/v1/";
+
 pub async fn get_my_servers() -> Result<Me, reqwest::Error> {
-  let resp = reqwest::get("https://api.nwn.beamdog.net/v1/me").await?.json::<Me>().await?;
+  let resp = reqwest::get(format!("{}/me", BASE_URL)).await?.json::<Me>().await?;
   Ok(resp)
 }
 
 pub async fn get_servers() -> Result<Vec<Server>, reqwest::Error> {
-  let resp = reqwest::get("https://api.nwn.beamdog.net/v1/servers").await?
-                                                                   .json::<Vec<Server>>()
-                                                                   .await?;
-  Ok(resp)
+  let response = match reqwest::get(format!("{}/servers", BASE_URL)).await {
+    Ok(response) => response,
+    Err(e) => return Err(e),
+  };
+
+  let json = match response.json::<Vec<Server>>().await {
+    Ok(json) => json,
+    Err(e) => return Err(e),
+  };
+
+  Ok(json)
 }
 
 pub async fn get_servers_by_public_key(public_key: String) -> Result<Vec<Server>, reqwest::Error> {
-  let url = format!("https://api.nwn.beamdog.net/v1/servers/{}", public_key);
-  let resp = reqwest::get(url).await?.json::<Vec<Server>>().await?;
-  Ok(resp)
+  let response = match reqwest::get(format!("{}/servers/{}", BASE_URL, public_key)).await {
+    Ok(response) => response,
+    Err(e) => return Err(e),
+  };
+
+  let json = match response.json::<Vec<Server>>().await {
+    Ok(json) => json,
+    Err(e) => return Err(e),
+  };
+
+  Ok(json)
 }
 
-pub async fn get_servers_by_ip_and_port(ip: String,
-                                        port: i32)
-                                        -> Result<Vec<Server>, reqwest::Error> {
-  let url = format!("https://api.nwn.beamdog.net/v1/servers/{}/{}", ip, port);
-  let resp = reqwest::get(url).await?.json::<Vec<Server>>().await?;
-  Ok(resp)
+pub async fn get_servers_by_ip_and_port(ip: String, port: i32) -> Result<Vec<Server>, reqwest::Error> {
+  let url = format!("{}/servers/{}/{}", BASE_URL, ip, port);
+
+  let response = match reqwest::get(url).await {
+    Ok(response) => response,
+    Err(e) => return Err(e),
+  };
+
+  let json = match response.json::<Vec<Server>>().await {
+    Ok(json) => json,
+    Err(e) => return Err(e),
+  };
+
+  Ok(json)
 }
